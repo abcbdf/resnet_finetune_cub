@@ -43,7 +43,7 @@ class cub200(torch.utils.data.Dataset):
 
     def _check_processed(self):
         assert os.path.isdir(self.root) == True
-        assert os.path.isfile(os.path.join(self.root, 'CUB_200_2011.tgz')) == True
+        #assert os.path.isfile(os.path.join(self.root, 'CUB_200_2011.tgz')) == True
         return (os.path.isfile(os.path.join(self.root, 'processed/train.pkl')) and
                 os.path.isfile(os.path.join(self.root, 'processed/test.pkl')))
 
@@ -80,12 +80,12 @@ class cub200(torch.utils.data.Dataset):
         for _id in range(id2name.shape[0]):
             cnt += 1
 
-            image_path = 'CUB_200_2011/images/' + id2name[_id, 1]
-            image = tar.extractfile(tar.getmember(image_path))
-            if not image:
-                print('get image: '+image_path + ' error')
-                raise RuntimeError
-            image = Image.open(image)
+            image_path = os.path.join(self.root, 'images/' + id2name[_id, 1])
+            # image = tar.extractfile(tar.getmember(image_path))
+            # if not image:
+            #     print('get image: '+image_path + ' error')
+            #     raise RuntimeError
+            image = Image.open(image_path)
             label = int(id2name[_id, 1][:3]) - 1
 
             if image.getbands()[0] == 'L':

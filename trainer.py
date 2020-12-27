@@ -15,8 +15,9 @@ class NetworkManager(object):
         self.device = options['device']
 
         print('Starting to prepare network and data...')
-
-        self.net = nn.DataParallel(self._net_choice(self.options['net_choice'])).to(self.device)
+        # print(self.device)
+        # exit()
+        self.net = self._net_choice(self.options['net_choice']).to(self.device)
         #self.net.load_state_dict(torch.load('/home/zhangyongshun/se_base_model/model_save/ResNet/backup/epoch120/ResNet50-finetune_fc_cub.pkl'))
         print('Network is as follows:')
         print(self.net)
@@ -69,7 +70,10 @@ class NetworkManager(object):
             num_correct = 0
             train_loss_epoch = list()
             num_total = 0
+            iter = 0
             for imgs, labels in self.train_loader:
+                # print(iter)
+                # iter += 1
                 self.solver.zero_grad()
                 imgs = imgs.to(self.device)
                 labels = labels.to(self.device)
@@ -95,6 +99,7 @@ class NetworkManager(object):
                 print('*', end='')
                 #torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'])+'.pkl'))
             print('{}\t{:.4f}\t{:.2f}%\t{:.2f}%'.format(epoch+1, avg_train_loss_epoch, train_acc_epoch, test_acc_epoch))
+        torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'])+'.pkl'))
         plt.figure()
         plt.plot(epochs, test_acc, color='r', label='Test Acc')
         plt.plot(epochs, train_acc, color='b', label='Train Acc')
