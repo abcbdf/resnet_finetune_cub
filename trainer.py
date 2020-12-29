@@ -18,7 +18,8 @@ class NetworkManager(object):
         # print(self.device)
         # exit()
         self.net = self._net_choice(self.options['net_choice']).to(self.device)
-        #self.net.load_state_dict(torch.load('/home/zhangyongshun/se_base_model/model_save/ResNet/backup/epoch120/ResNet50-finetune_fc_cub.pkl'))
+        if self.options["test"]:
+            self.net.load_state_dict(torch.load('./model_save/ResNet/ResNet50.pkl'))
         print('Network is as follows:')
         print(self.net)
         #print(self.net.state_dict())
@@ -53,6 +54,7 @@ class NetworkManager(object):
         self.test_loader = torch.utils.data.DataLoader(
             test_data, batch_size=16, shuffle=False, num_workers=4, pin_memory=True
         )
+        self.activation = {}
 
     def train(self):
         epochs  = np.arange(1, self.options['epochs']+1)
@@ -97,9 +99,9 @@ class NetworkManager(object):
                 best_acc = test_acc_epoch
                 best_epoch = epoch+1
                 print('*', end='')
-                #torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'])+'.pkl'))
+                torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'])+'.pkl'))
             print('{}\t{:.4f}\t{:.2f}%\t{:.2f}%'.format(epoch+1, avg_train_loss_epoch, train_acc_epoch, test_acc_epoch))
-        torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'])+'.pkl'))
+        #torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'])+'.pkl'))
         plt.figure()
         plt.plot(epochs, test_acc, color='r', label='Test Acc')
         plt.plot(epochs, train_acc, color='b', label='Train Acc')
@@ -110,18 +112,27 @@ class NetworkManager(object):
         plt.title(self.options['net_choice']+str(self.options['model_choice']))
         plt.savefig(self.options['net_choice']+str(self.options['model_choice'])+'.png')
 
+    def test(self):
+        test_acc_epoch = self._accuracy()
+        print("test accuracy: {:.4f}".format(test_acc_epoch))
+
     def _accuracy(self):
         self.net.eval()
         num_total = 0
         num_acc = 0
+        self.net.base_model.avgpool.register_forward_hook(self.get_activation("feature"))
         with torch.no_grad():
             for imgs, labels in self.test_loader:
+                print(labels)
+                # exit()
                 imgs = imgs.to(self.device)
                 labels = labels.to(self.device)
                 output = self.net(imgs)
                 _, pred = torch.max(output, 1)
                 num_acc += torch.sum(pred==labels.detach_())
                 num_total += labels.size(0)
+                # print(self.activation["feature"].size())
+                # exit()
         return num_acc.detach().cpu().numpy()*100/num_total
 
     def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
@@ -144,3 +155,8 @@ class NetworkManager(object):
         lr = args.lr * (0.1 ** (epoch // 30))
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
+
+    def get_activation(self, name):
+        def hook(model, input, output):
+            self.activation[name] = output.detach()
+        return hook

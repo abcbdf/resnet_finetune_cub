@@ -27,6 +27,7 @@ def main():
                         help='choose one gpu for training')
     parser.add_argument('--img_size', type=int, default=448,
                         help='image\'s size for transforms')
+    parser.add_argument('--test', action='store_true')
     args = parser.parse_args()
     assert args.gpu_id.__class__ == int
 
@@ -40,6 +41,7 @@ def main():
         'weight_decay': args.weight_decay,
         'momentum': args.momentum,
         'img_size': args.img_size,
+        'test': args.test,
         'device': torch.device('cuda:'+str(args.gpu_id) if torch.cuda.is_available() else 'cpu')
     }
 
@@ -54,7 +56,10 @@ def main():
         assert os.path.isdir(path[p])
 
     manager = NetworkManager(options, path)
-    manager.train()
+    if not args.test:
+        manager.train()
+    else:
+        manager.test()
 
 
 if __name__ == '__main__':

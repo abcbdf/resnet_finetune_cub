@@ -79,7 +79,7 @@ class cub200(torch.utils.data.Dataset):
         test_cnt = 0
         for _id in range(id2name.shape[0]):
             cnt += 1
-
+            print(id2name[_id, 1])
             image_path = os.path.join(self.root, 'images/' + id2name[_id, 1])
             # image = tar.extractfile(tar.getmember(image_path))
             # if not image:
