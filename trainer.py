@@ -19,7 +19,8 @@ class NetworkManager(object):
         # exit()
         self.net = self._net_choice(self.options['net_choice']).to(self.device)
         if self.options["test"]:
-            self.net.load_state_dict(torch.load('./model_save/ResNet/ResNet50.pkl').to(self.device))
+            load_data = torch.load('./model_save/ResNet/ResNet50.pkl').to(self.device)
+            self.net.load_state_dict(load_data)
         print('Network is as follows:')
         print(self.net)
         #print(self.net.state_dict())
