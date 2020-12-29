@@ -71,15 +71,17 @@ class cub200(torch.utils.data.Dataset):
         print('Finish loading images.txt and train_test_split.txt')
         train_data = []
         train_labels = []
+        train_name = []
         test_data = []
         test_labels = []
+        test_name = []
         print('Start extract images..')
         cnt = 0
         train_cnt = 0
         test_cnt = 0
         for _id in range(id2name.shape[0]):
             cnt += 1
-            print(id2name[_id, 1])
+            name = id2name[_id, 1]
             image_path = os.path.join(self.root, 'images/' + id2name[_id, 1])
             # image = tar.extractfile(tar.getmember(image_path))
             # if not image:
@@ -97,15 +99,17 @@ class cub200(torch.utils.data.Dataset):
                 train_cnt += 1
                 train_data.append(image_np)
                 train_labels.append(label)
+                train_name.append(name)
             else:
                 test_cnt += 1
                 test_data.append(image_np)
                 test_labels.append(label)
+                test_name.append(name)
             if cnt%1000 == 0:
                 print('{} images have been extracted'.format(cnt))
         print('Total images: {}, training images: {}. testing images: {}'.format(cnt, train_cnt, test_cnt))
         tar.close()
-        pickle.dump((train_data, train_labels),
+        pickle.dump((train_data, train_labels, train_name),
                     open(os.path.join(self.root, 'processed/train.pkl'), 'wb'))
-        pickle.dump((test_data, test_labels),
+        pickle.dump((test_data, test_labels, test_name),
                     open(os.path.join(self.root, 'processed/test.pkl'), 'wb'))
