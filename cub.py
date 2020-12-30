@@ -20,11 +20,11 @@ class cub200(torch.utils.data.Dataset):
             self._extract()
 
         if self.train:
-            self.train_data, self.train_label = pickle.load(
+            self.train_data, self.train_label, self.train_name = pickle.load(
                 open(os.path.join(self.root, 'processed/train.pkl'), 'rb')
             )
         else:
-            self.test_data, self.test_label = pickle.load(
+            self.test_data, self.test_label, self.test_name = pickle.load(
                 open(os.path.join(self.root, 'processed/test.pkl'), 'rb')
             )
 
@@ -33,13 +33,13 @@ class cub200(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         if self.train:
-            img, label = self.train_data[idx], self.train_label[idx]
+            img, label, name = self.train_data[idx], self.train_label[idx], self.train_name[idx]
         else:
-            img, label = self.test_data[idx], self.test_label[idx]
+            img, label, name = self.test_data[idx], self.test_label[idx], self.test_name[idx]
         img = Image.fromarray(img)
         if self.transform is not None:
             img = self.transform(img)
-        return img, label
+        return img, label, name
 
     def _check_processed(self):
         assert os.path.isdir(self.root) == True

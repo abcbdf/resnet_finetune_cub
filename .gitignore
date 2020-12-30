@@ -1,3 +1,5 @@
 cub200/*
 model_save/*
 __pycache__/*
+*/__pycache__/*
+backup/*

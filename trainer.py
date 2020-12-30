@@ -123,9 +123,9 @@ class NetworkManager(object):
         num_acc = 0
         self.net.base_model.avgpool.register_forward_hook(self.get_activation("feature"))
         with torch.no_grad():
-            for imgs, labels in self.test_loader:
-                print(labels)
-                # exit()
+            for imgs, labels, name in self.test_loader:
+                print(name)
+                exit()
                 imgs = imgs.to(self.device)
                 labels = labels.to(self.device)
                 output = self.net(imgs)
