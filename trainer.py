@@ -4,6 +4,7 @@ import torch.nn as nn
 import numpy as np
 from models.models_for_cub import ResNet
 from cub import cub200
+from flo import flower
 import os
 import matplotlib.pyplot as plt
 import shutil
@@ -47,8 +48,15 @@ class NetworkManager(object):
             transforms.Normalize(mean=(0.485, 0.456, 0.406),
                                  std=(0.229, 0.224, 0.225))
         ]
-        train_data = cub200(self.path['data'], train=True, transform=transforms.Compose(train_transform_list))
-        test_data = cub200(self.path['data'], train=False, transform=transforms.Compose(test_transforms_list))
+        if (self.options['dataset'] == "cub"):
+            train_data = cub200(self.path['data'], train=True, transform=transforms.Compose(train_transform_list))
+            test_data = cub200(self.path['data'], train=False, transform=transforms.Compose(test_transforms_list))
+        elif (self.options['dataset'] == "flo"):
+            print("flower dataset")
+            train_data = flower(self.path['data'], train=True, transform=transforms.Compose(train_transform_list))
+            test_data = flower(self.path['data'], train=False, transform=transforms.Compose(test_transforms_list))
+
+        exit()
         self.train_loader = torch.utils.data.DataLoader(
             train_data, batch_size=self.options['batch_size'], shuffle=True, num_workers=4, pin_memory=True
         )
@@ -100,7 +108,7 @@ class NetworkManager(object):
                 best_acc = test_acc_epoch
                 best_epoch = epoch+1
                 print('*', end='')
-                torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'])+'.pkl'))
+                torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'] + "_" + self.options["dataset"])+'.pkl'))
             print('{}\t{:.4f}\t{:.2f}%\t{:.2f}%'.format(epoch+1, avg_train_loss_epoch, train_acc_epoch, test_acc_epoch))
         #torch.save(self.net.state_dict(), os.path.join(self.path['model_save'], self.options['net_choice'], self.options['net_choice']+str(self.options['model_choice'])+'.pkl'))
         plt.figure()

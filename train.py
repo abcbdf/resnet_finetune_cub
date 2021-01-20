@@ -9,6 +9,7 @@ def main():
     parser = argparse.ArgumentParser(
         description='Options for base model finetuning on CUB_200_2011 datasets'
     )
+    parser.add_argument("--dataset", type=str, default="cub")
     parser.add_argument('--batch_size', type=int, default=64,
                         help='batch size for training')
     parser.add_argument('--base_lr', type=float, default=0.001,
@@ -33,6 +34,7 @@ def main():
 
 
     options = {
+        'dataset': args.dataset,
         'net_choice': args.net_choice,
         'model_choice': args.model_choice,
         'epochs': args.epochs,
