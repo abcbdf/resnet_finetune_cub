@@ -9,6 +9,7 @@ import os
 import matplotlib.pyplot as plt
 import shutil
 from utils.Config import Config
+import pickle
 class NetworkManager(object):
     def __init__(self, options, path):
         self.options = options
@@ -130,18 +131,29 @@ class NetworkManager(object):
         num_total = 0
         num_acc = 0
         self.net.base_model.avgpool.register_forward_hook(self.get_activation("feature"))
+        save_dic = {}
         with torch.no_grad():
-            for imgs, labels, name in self.test_loader:
-                print(name)
-                exit()
+            num = 0
+            for imgs, labels, name in self.train_loader:
+                print(num)
+                num += 1
                 imgs = imgs.to(self.device)
                 labels = labels.to(self.device)
                 output = self.net(imgs)
                 _, pred = torch.max(output, 1)
                 num_acc += torch.sum(pred==labels.detach_())
                 num_total += labels.size(0)
+                if self.options["test"]:
+                    for idx, n in enumerate(name):
+                        assert n not in save_dic
+                        # print(self.activation["feature"][idx].cpu().numpy().flatten())
+                        # exit()
+                        save_dic[n] = self.activation["feature"][idx].cpu().numpy().flatten()
                 # print(self.activation["feature"].size())
                 # exit()
+        if self.options["test"]:
+            with open('./feature/train_feature.pkl', 'wb') as handle:
+                pickle.dump(save_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return num_acc.detach().cpu().numpy()*100/num_total
 
     def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
